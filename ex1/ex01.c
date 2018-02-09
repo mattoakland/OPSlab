@@ -4,6 +4,8 @@
 #include <stdio.h>    // file IO, perror()
 #include <string.h>   // str(n)cpy()
 #include <stdbool.h>  // Bool type
+#include <stdlib.h>
+#include <getopt.h>
 
 // Function prototypes:
 void print_help();
@@ -12,12 +14,84 @@ void print_env(char* envp[]);
 
 
 int main(int argc, char* argv[], char* envp[]) {
+  int c = 0;
   // If no arguments are given, print help
-  
-  // Set up struct option array long_options[]
-  
-  // Scan the different command-line arguments and options
-  return 0;
+  if(argc < 2){
+    print_help();
+  }
+  while(1)
+    {
+      // Set up struct option array long_options[]
+      static struct option long_options[] =
+        {
+          /* These options don’t set a flag.
+             We distinguish them by their indices. */
+          {"help",     no_argument,       0, 'h'},
+          {"file",  required_argument, 0, 'f'},
+          {"end",  required_argument, 0, 'e'},
+          {"env",    no_argument, 0, 'v'},
+          {0, 0, 0, 0}
+        };
+      /* getopt_long stores the option index here. */
+      int option_index = 0;
+
+      c = getopt_long (argc, argv, "hf:e:v",
+                       long_options, &option_index);  
+      // Scan the different command-line arguments and options
+      /* Detect the end of the options. */
+      if (c == -1)
+	break;
+
+      switch (c)
+	{
+	case 0:
+          /* If this option set a flag, do nothing else now. */
+          if (long_options[option_index].flag != 0)
+            break;
+          printf ("option %s", long_options[option_index].name);
+          if (optarg)
+            printf (" with arg %s", optarg);
+          printf ("\n");
+          break;
+	  
+	case 'h':
+	  puts ("option -help\n");
+	  print_help();
+	  break;
+
+	case 'f':
+	  printf ("option -file with value '%s'\n", optarg);
+	  read_file(optarg , 0);
+	  break;
+
+	case 'e':
+	  printf ("option -end with value `%s'\n", optarg);
+	  read_file(optarg , 1);
+	  break;
+
+	case 'v':
+	  printf ("option -env\n");
+	  print_env(envp);
+	  break;
+
+	case '?':
+	  /* getopt_long already printed an error message. */
+	  break;
+
+	default:
+	  abort ();
+	}	
+    }
+  /* Print any remaining command line arguments (not options). */
+  if (optind < argc)
+    {
+      printf ("non-option ARGV-elements: ");
+      while (optind < argc)
+        printf ("%s ", argv[optind++]);
+      putchar ('\n');
+    }
+
+  exit (0);
 }
 
 
